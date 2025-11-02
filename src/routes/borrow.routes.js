@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { listAll, listByUser, createRequest, approve, extend, returnBook } from "../controllers/borrow.controller.js";
+import { verifyJWT } from "../middleware/auth.js";
+import { requireRole } from "../middleware/roles.js";
+const r = Router();
+r.get("/", verifyJWT, requireRole("admin"), listAll);
+r.get("/user/:userId", verifyJWT, listByUser);
+r.post("/", verifyJWT, createRequest);
+r.put("/:id/approve", verifyJWT, requireRole("admin"), approve);
+r.put("/:id/extend", verifyJWT, extend);
+r.put("/:id/return", verifyJWT, returnBook);
+export default r;
