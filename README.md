@@ -229,10 +229,8 @@ This project is licensed under the **MIT License**.
 
 | Role         | Name                  | Student ID |
 | ------------ | --------------------- | ---------- |
-| 🧑‍💼 Leader    | Nguyễn Thị Mỹ Duyên   | 22520350   |
-| 👨‍💻 Developer | Võ Thành Danh         | 22520201   |
-| 👨‍💻 Developer | Nguyễn Minh Cường     | 22520177   |
-| 👩‍💻 UI/UX     | Phạm Thị Minh Hiền    | 22520422   |
-| 👩‍💻 Tester    | Trần Nguyễn Duy Thiện | 22521398   |
+| 👨‍💻 Developer |Nguyễn Thị Mỹ Duyên    | 22520350   |
+| 👨‍💻 Developer |Nguyễn Thị Huyền Linh  | 22520772   |
+
 
 ---
