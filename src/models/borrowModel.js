@@ -12,7 +12,13 @@ const borrowSchema = new mongoose.Schema(
     }, // +7 ngày
     status: {
       type: String,
-      enum: ["Pending Approval", "Borrowing", "Returned", "Overdue"],
+      enum: [
+        "Pending Approval",
+        "Borrowing",
+        "Returned",
+        "Overdue",
+        "Rejected",
+      ],
       default: "Pending Approval",
     },
 

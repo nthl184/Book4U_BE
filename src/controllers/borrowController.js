@@ -138,3 +138,19 @@ export const removeBorrow = asyncHandler(async (req, res) => {
 export const syncAll = asyncHandler(async (req, res) => {
   res.json({ message: "Sync OK" });
 });
+// 🧾 PUT /api/borrow/:id/reject
+export const rejectBorrow = asyncHandler(async (req, res) => {
+  const rec = await Borrow.findById(req.params.id).populate("book user");
+  if (!rec) return res.status(404).json({ message: "Not found" });
+
+  if (rec.status !== "Pending Approval") {
+    return res
+      .status(400)
+      .json({ message: "Only pending requests can be rejected" });
+  }
+
+  rec.status = "Rejected";
+  await rec.save();
+
+  res.json(shapeForAdmin(rec));
+});

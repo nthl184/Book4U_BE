@@ -5,6 +5,7 @@ import {
   getMine,
   createBorrow,
   approve,
+  rejectBorrow,
   extend,
   markReturned,
   removeBorrow,
@@ -51,6 +52,9 @@ router.post("/", authRequired, createBorrow);
 
 // 🧾 Admin — duyệt yêu cầu mượn
 router.put("/:id/approve", authRequired, admin, approve);
+
+// 🧾 Admin — từ chối yêu cầu (NEW)
+router.put("/:id/reject", authRequired, admin, rejectBorrow);
 
 // 🧾 Student — gia hạn mượn
 router.put("/:id/extend", authRequired, extend);
