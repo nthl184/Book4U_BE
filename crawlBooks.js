@@ -1,11 +1,16 @@
-import mongoose from "mongoose";
+// 📚 crawlBooks.js (Google Books API version - NO OPENAI)
+// Thu thập: title, author, image, intro, description, preview
+
 import axios from "axios";
+import mongoose from "mongoose";
 import Book from "./src/models/bookModel.js";
+import dotenv from "dotenv";
+dotenv.config();
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/book4u"; // đổi nếu dùng Atlas
+const GOOGLE_API = "https://www.googleapis.com/books/v1/volumes?q=";
 
-// List các chủ đề sẽ crawl
-const subjects = [
+// Danh mục sách để crawl
+const categories = [
   "programming",
   "fiction",
   "romance",
@@ -15,49 +20,82 @@ const subjects = [
   "technology",
 ];
 
-// OpenLibrary API limit
-const LIMIT = 20;
+// Trích nội dung preview tốt nhất có thể
+const extractPreview = (info) => {
+  return (
+    info.description ||
+    info.searchInfo?.textSnippet ||
+    "No preview available for this book."
+  );
+};
 
-async function crawlSubject(subject) {
-  const url = `https://openlibrary.org/subjects/${subject}.json?limit=${LIMIT}`;
-  const { data } = await axios.get(url);
+const crawlCategory = async (keyword) => {
+  try {
+    console.log(`📚 Crawling category: ${keyword}`);
 
-  const books = data.works.map((item) => ({
-    title: item.title,
-    author: item.authors?.[0]?.name || "Unknown",
-    category: subject,
-    description: item.description?.value || item.description || "",
-    coverImage: item.cover_id
-      ? `https://covers.openlibrary.org/b/id/${item.cover_id}-L.jpg`
-      : "",
-    fileUrl: item.key ? `https://openlibrary.org${item.key}.pdf` : "",
-    pages: item.number_of_pages || 0,
-    availableCopies: Math.floor(Math.random() * 5) + 1,
-  }));
+    const url = `${GOOGLE_API}${encodeURIComponent(keyword)}&maxResults=20`;
 
-  return books;
-}
+    const res = await axios.get(url);
+    const items = res.data.items || [];
 
-async function startCrawl() {
-  await mongoose.connect(MONGO_URI);
+    let count = 0;
+
+    for (const item of items) {
+      const info = item.volumeInfo;
+      if (!info?.title) continue;
+
+      const previewText = extractPreview(info);
+
+      const book = {
+        title: info.title,
+        author: info.authors?.join(", ") || "Unknown",
+        category: keyword.toLowerCase(),
+
+        // Hình ảnh
+        img: info.imageLinks?.thumbnail || "",
+        image: info.imageLinks?.thumbnail || "",
+
+        // Nội dung preview
+        intro: previewText.slice(0, 200),
+        description: previewText,
+
+        pages: info.pageCount || null,
+        fileUrl: info.infoLink || "",
+        available: true,
+        stock: 10,
+        availableCopies: 10,
+      };
+
+      await Book.create(book);
+      count++;
+    }
+
+    console.log(`📥 Added ${count} books for category: ${keyword}`);
+    return count;
+  } catch (err) {
+    console.error("❌ Crawl error:", err.message);
+    return 0;
+  }
+};
+
+// Start
+const startCrawling = async () => {
+  await mongoose.connect(process.env.MONGO_URI);
   console.log("🔗 Connected to MongoDB...");
 
-  let allBooks = [];
+  let total = 0;
 
-  for (const subject of subjects) {
-    console.log(`📚 Crawling: ${subject}`);
-    const books = await crawlSubject(subject);
-    allBooks.push(...books);
+  for (const cate of categories) {
+    const added = await crawlCategory(cate);
+    total += added;
   }
 
-  console.log(`📥 Total crawled books: ${allBooks.length}`);
+  console.log("\n==============================");
+  console.log(`📚 TOTAL BOOKS ADDED: ${total}`);
+  console.log("==============================\n");
 
-  // clear & insert
-  await Book.deleteMany({});
-  await Book.insertMany(allBooks);
+  mongoose.connection.close();
+  console.log("🔌 MongoDB disconnected");
+};
 
-  console.log("✅ Crawled & Seeded successfully!");
-  process.exit();
-}
-
-startCrawl().catch((err) => console.error(err));
+startCrawling();

@@ -63,7 +63,7 @@ export const createBook = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "title and author are required" });
   }
 
-  // ⭐ FIX QUAN TRỌNG: chuẩn hóa category
+  // ⭐ chuẩn hóa category
   category = category?.trim().toLowerCase() || "others";
 
   const book = await Book.create({

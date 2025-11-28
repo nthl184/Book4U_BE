@@ -13,28 +13,44 @@ const calcRemaining = (dueDate) => {
 };
 
 // 🧩 Chuẩn hóa dữ liệu trả về
-const shapeForAdmin = (rec) => ({
-  id: rec.id,
-  title: rec.book?.title || "",
-  borrowerName: rec.user?.name || "",
-  borrowerEmail: rec.user?.email || "",
-  borrowDate: rec.borrowDate
-    ? new Date(rec.borrowDate).toISOString().slice(0, 10)
-    : "",
-  dueDate: rec.dueDate ? new Date(rec.dueDate).toISOString().slice(0, 10) : "",
-  status: rec.status,
-  extendedDays: rec.extendedDays || 0,
-});
+const shapeForAdmin = (rec) => {
+  const bookTitle = rec.book?.title || rec.title || rec.bookTitle || "Unknown";
+
+  return {
+    id: rec.id,
+    title: bookTitle,
+    bookTitle: bookTitle,
+
+    borrowerName: rec.user?.name || "",
+    borrowerEmail: rec.user?.email || "",
+
+    borrowDate: rec.borrowDate ? rec.borrowDate.toISOString().slice(0, 10) : "",
+
+    dueDate: rec.dueDate ? rec.dueDate.toISOString().slice(0, 10) : "",
+
+    status: rec.status,
+    extendedDays: rec.extendedDays || 0,
+  };
+};
 
 const shapeForStudent = (rec) => {
   const remaining = calcRemaining(rec.dueDate);
   const isOverdue = remaining < 0;
+
+  // 👇 LẤY ĐÚNG TÊN SÁCH
+  const bookTitle = rec.book?.title || rec.title || rec.bookTitle || "Unknown";
   return {
     id: rec.id,
-    title: rec.book?.title || "",
+
+    // 👇 Trả 2 field để FE nào cũng đọc được
+    title: bookTitle,
+    bookTitle: bookTitle,
+
     borrowDate: rec.borrowDate ? rec.borrowDate.toISOString().slice(0, 10) : "",
     dueDate: rec.dueDate ? rec.dueDate.toISOString().slice(0, 10) : "",
+
     status: isOverdue && rec.status === "Borrowing" ? "Overdue" : rec.status,
+
     daysRemaining: remaining,
     extendedDays: rec.extendedDays || 0,
   };
@@ -67,18 +83,33 @@ export const getByUser = asyncHandler(async (req, res) => {
 // 🧾 POST /api/borrow
 export const createBorrow = asyncHandler(async (req, res) => {
   const { userId, bookId } = req.body;
+
   const user = await User.findById(userId);
   const book = await Book.findById(bookId);
 
   if (!user || !book)
     return res.status(400).json({ message: "Invalid user or book" });
 
+  // 🔥 RULE: A student can only borrow max 3 books simultaneously
+  const activeCount = await Borrow.countDocuments({
+    user: userId,
+    status: { $in: ["Pending Approval", "Borrowing", "Overdue"] },
+  });
+
+  if (activeCount >= 3) {
+    return res
+      .status(400)
+      .json({ message: "You have reached the limit of 3 active borrowings." });
+  }
+
+  // Create new pending record
   const rec = await Borrow.create({
     user: user._id,
     book: book._id,
     borrower: user.email,
     status: "Pending Approval",
   });
+
   await rec.populate("book user");
   res.status(201).json(shapeForAdmin(rec));
 });
