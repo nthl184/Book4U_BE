@@ -18,7 +18,7 @@ export const getBooks = asyncHandler(async (req, res) => {
     ];
   }
 
-  // ⭐ FILTER CATEGORY — dùng lowercase đúng chuẩn FE
+  // FILTER CATEGORY — dùng lowercase đúng chuẩn FE
   if (category && category.toLowerCase() !== "all") {
     filter.category = category.toLowerCase();
   }
@@ -63,7 +63,7 @@ export const createBook = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "title and author are required" });
   }
 
-  // ⭐ FIX QUAN TRỌNG: chuẩn hóa category
+  // chuẩn hóa category
   category = category?.trim().toLowerCase() || "others";
 
   const book = await Book.create({
@@ -111,7 +111,7 @@ export const updateBook = asyncHandler(async (req, res) => {
   fields.forEach((f) => {
     if (req.body[f] !== undefined) {
       if (f === "category") {
-        // ⭐ chuẩn hóa category khi update
+        // chuẩn hóa category khi update
         book[f] = req.body[f].trim().toLowerCase();
       } else {
         book[f] = req.body[f];
@@ -119,7 +119,7 @@ export const updateBook = asyncHandler(async (req, res) => {
     }
   });
 
-  // ⭐ auto-sync ảnh nếu cần
+  // auto-sync ảnh nếu cần
   if (book.coverImage) {
     if (!book.img) book.img = book.coverImage;
     if (!book.image) book.image = book.coverImage;

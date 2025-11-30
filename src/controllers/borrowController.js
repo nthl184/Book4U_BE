@@ -3,7 +3,7 @@ import Borrow from "../models/borrowModel.js";
 import Book from "../models/bookModel.js";
 import User from "../models/userModel.js";
 
-// 🧩 Helper để tính số ngày còn lại
+// Helper để tính số ngày còn lại
 const calcRemaining = (dueDate) => {
   if (!dueDate) return null;
   const diff = Math.ceil(
@@ -12,35 +12,51 @@ const calcRemaining = (dueDate) => {
   return diff;
 };
 
-// 🧩 Chuẩn hóa dữ liệu trả về
-const shapeForAdmin = (rec) => ({
-  id: rec.id,
-  title: rec.book?.title || "",
-  borrowerName: rec.user?.name || "",
-  borrowerEmail: rec.user?.email || "",
-  borrowDate: rec.borrowDate
-    ? new Date(rec.borrowDate).toISOString().slice(0, 10)
-    : "",
-  dueDate: rec.dueDate ? new Date(rec.dueDate).toISOString().slice(0, 10) : "",
-  status: rec.status,
-  extendedDays: rec.extendedDays || 0,
-});
+// Chuẩn hóa dữ liệu trả về
+const shapeForAdmin = (rec) => {
+  const bookTitle = rec.book?.title || rec.title || rec.bookTitle || "Unknown";
+
+  return {
+    id: rec.id,
+    title: bookTitle,
+    bookTitle: bookTitle,
+
+    borrowerName: rec.user?.name || "",
+    borrowerEmail: rec.user?.email || "",
+
+    borrowDate: rec.borrowDate ? rec.borrowDate.toISOString().slice(0, 10) : "",
+
+    dueDate: rec.dueDate ? rec.dueDate.toISOString().slice(0, 10) : "",
+
+    status: rec.status,
+    extendedDays: rec.extendedDays || 0,
+  };
+};
 
 const shapeForStudent = (rec) => {
   const remaining = calcRemaining(rec.dueDate);
   const isOverdue = remaining < 0;
+
+  // LẤY ĐÚNG TÊN SÁCH
+  const bookTitle = rec.book?.title || rec.title || rec.bookTitle || "Unknown";
   return {
     id: rec.id,
-    title: rec.book?.title || "",
+
+    // Trả 2 field để FE nào cũng đọc được
+    title: bookTitle,
+    bookTitle: bookTitle,
+
     borrowDate: rec.borrowDate ? rec.borrowDate.toISOString().slice(0, 10) : "",
     dueDate: rec.dueDate ? rec.dueDate.toISOString().slice(0, 10) : "",
+
     status: isOverdue && rec.status === "Borrowing" ? "Overdue" : rec.status,
+
     daysRemaining: remaining,
     extendedDays: rec.extendedDays || 0,
   };
 };
 
-// 🧾 GET /api/borrow (admin)
+// GET /api/borrow (admin)
 export const getAll = asyncHandler(async (req, res) => {
   const list = await Borrow.find()
     .populate("book user")
@@ -48,7 +64,7 @@ export const getAll = asyncHandler(async (req, res) => {
   res.json(list.map(shapeForAdmin));
 });
 
-// 🧾 GET /api/borrow/me (student)
+// GET /api/borrow/me (student)
 export const getMine = asyncHandler(async (req, res) => {
   const list = await Borrow.find({ user: req.user.id })
     .populate("book")
@@ -56,7 +72,7 @@ export const getMine = asyncHandler(async (req, res) => {
   res.json(list.map(shapeForStudent));
 });
 
-// 🧾 GET /api/borrow/user/:id
+// GET /api/borrow/user/:id
 export const getByUser = asyncHandler(async (req, res) => {
   const list = await Borrow.find({ user: req.params.userId })
     .populate("book")
@@ -64,26 +80,41 @@ export const getByUser = asyncHandler(async (req, res) => {
   res.json(list.map(shapeForStudent));
 });
 
-// 🧾 POST /api/borrow
+// POST /api/borrow
 export const createBorrow = asyncHandler(async (req, res) => {
   const { userId, bookId } = req.body;
+
   const user = await User.findById(userId);
   const book = await Book.findById(bookId);
 
   if (!user || !book)
     return res.status(400).json({ message: "Invalid user or book" });
 
+  // RULE: A student can only borrow max 3 books simultaneously
+  const activeCount = await Borrow.countDocuments({
+    user: userId,
+    status: { $in: ["Pending Approval", "Borrowing", "Overdue"] },
+  });
+
+  if (activeCount >= 3) {
+    return res
+      .status(400)
+      .json({ message: "You have reached the limit of 3 active borrowings." });
+  }
+
+  // Create new pending record
   const rec = await Borrow.create({
     user: user._id,
     book: book._id,
     borrower: user.email,
     status: "Pending Approval",
   });
+
   await rec.populate("book user");
   res.status(201).json(shapeForAdmin(rec));
 });
 
-// 🧾 PUT /api/borrow/:id/approve
+// PUT /api/borrow/:id/approve
 export const approve = asyncHandler(async (req, res) => {
   const rec = await Borrow.findById(req.params.id).populate("book user");
   if (!rec) return res.status(404).json({ message: "Not found" });
@@ -100,7 +131,7 @@ export const approve = asyncHandler(async (req, res) => {
   res.json(shapeForAdmin(rec));
 });
 
-// 🧾 PUT /api/borrow/:id/extend
+// PUT /api/borrow/:id/extend
 export const extend = asyncHandler(async (req, res) => {
   const rec = await Borrow.findById(req.params.id).populate("book user");
   if (!rec) return res.status(404).json({ message: "Not found" });
@@ -117,7 +148,7 @@ export const extend = asyncHandler(async (req, res) => {
   res.json(shapeForAdmin(rec));
 });
 
-// 🧾 PUT /api/borrow/:id/return
+// PUT /api/borrow/:id/return
 export const markReturned = asyncHandler(async (req, res) => {
   const rec = await Borrow.findById(req.params.id).populate("book user");
   if (!rec) return res.status(404).json({ message: "Not found" });
@@ -138,7 +169,7 @@ export const removeBorrow = asyncHandler(async (req, res) => {
 export const syncAll = asyncHandler(async (req, res) => {
   res.json({ message: "Sync OK" });
 });
-// 🧾 PUT /api/borrow/:id/reject
+// PUT /api/borrow/:id/reject
 export const rejectBorrow = asyncHandler(async (req, res) => {
   const rec = await Borrow.findById(req.params.id).populate("book user");
   if (!rec) return res.status(404).json({ message: "Not found" });
