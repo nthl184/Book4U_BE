@@ -1,10 +1,10 @@
-# 📚 **Book4U – Backend (Node.js + Express + MongoDB)**
+# **Book4U – Backend (Node.js + Express + MongoDB)**
 
 > Smart Library Management System for Students – built with RESTful APIs, JWT Authentication, and Mongoose ORM.
 
 ---
 
-## 🚀 **1. Overview**
+## **1. Overview**
 
 Book4U Backend là **server API** phục vụ cho hệ thống thư viện thông minh (Book4U).  
 Nó cung cấp các tính năng chính:
@@ -17,7 +17,7 @@ Nó cung cấp các tính năng chính:
 
 ---
 
-## 🧩 **2. Tech Stack**
+## **2. Tech Stack**
 
 | Layer              | Technology                |
 | ------------------ | ------------------------- |
@@ -31,22 +31,22 @@ Nó cung cấp các tính năng chính:
 
 ---
 
-## ⚙️ **3. Installation & Setup**
+## **3. Installation & Setup**
 
-### 🪶 Step 1 – Clone repo
+### Step 1 – Clone repo
 
 ```bash
 git clone https://github.com/<your-username>/Book4U_BE.git
 cd Book4U_BE
 ```
 
-### 🧱 Step 2 – Install dependencies
+### Step 2 – Install dependencies
 
 ```bash
 npm install
 ```
 
-### ⚡ Step 3 – Create `.env` file
+### Step 3 – Create `.env` file
 
 Tạo file `.env` tại thư mục gốc:
 
@@ -56,7 +56,7 @@ JWT_SECRET=secretkey
 PORT=5000
 ```
 
-### ▶️ Step 4 – Run server
+### Step 4 – Run server
 
 **Development mode (hot reload):**
 
@@ -70,12 +70,11 @@ npm run dev
 npm start
 ```
 
-Server mặc định chạy tại:  
-👉 `http://localhost:5000/api`
+Server mặc định chạy tại:  `http://localhost:5000/api`
 
 ---
 
-## 🧠 **4. Folder Structure**
+## **4. Folder Structure**
 
 ```
 Book4U_BE/
@@ -108,7 +107,7 @@ Book4U_BE/
 
 ---
 
-## 🔐 **5. Authentication Flow**
+## **5. Authentication Flow**
 
 ### Register (`POST /api/auth/register`)
 
@@ -153,7 +152,7 @@ Book4U_BE/
 
 ---
 
-## 📘 **6. Main API Endpoints**
+## **6. Main API Endpoints**
 
 | Endpoint                  | Method | Description                   | Role          |
 | ------------------------- | ------ | ----------------------------- | ------------- |
@@ -170,7 +169,7 @@ Book4U_BE/
 
 ---
 
-## 🧑‍🎓 **7. Seed Student Accounts**
+## **7. Seed Student Accounts**
 
 Dùng script `seedUsers.js` để tạo danh sách sinh viên mặc định.  
 Mặc định mỗi user có:
@@ -189,7 +188,7 @@ node seedUsers.js
 
 ---
 
-## 🧑‍💼 **8. Admin Default Account**
+## **8. Admin Default Account**
 
 ```json
 {
@@ -201,7 +200,7 @@ node seedUsers.js
 
 ---
 
-## 🌐 **9. Integration with Frontend (React)**
+## **9. Integration with Frontend (React)**
 
 Frontend (Book4U_FE) sử dụng `axiosClient` để gọi API.  
 Cấu hình:
@@ -218,18 +217,18 @@ Authorization: Bearer <JWT_TOKEN>
 
 ---
 
-## 🧾 **10. License**
+## **10. License**
 
 This project is licensed under the **MIT License**.  
 © 2025 **Book4U Smart Library**
 
 ---
 
-## ❤️ **Contributors**
+## **Contributors**
 
-| Role         | Name                  | Student ID |
-| ------------ | --------------------- | ---------- |
-| 👨‍💻 Developer | Nguyễn Thị Mỹ Duyên   | 22520350   |
-| 👨‍💻 Developer | Nguyễn Thị Huyền Linh | 22520772   |
+| Role       | Name                  | Student ID |
+| -----------| --------------------- | ---------- |
+|  Developer | Nguyễn Thị Mỹ Duyên   | 22520350   |
+|  Developer | Nguyễn Thị Huyền Linh | 22520772   |
 
 ---
