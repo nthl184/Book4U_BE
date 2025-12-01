@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import axios from "axios";
 import Book from "./src/models/bookModel.js";
 
-const MONGO_URI = "mongodb://127.0.0.1:27017/book4u"; // đổi nếu dùng Atlas
+const MONGO_URI = "mongodb+srv://admin:admin123456@cluster0.q4nm8te.mongodb.net/test?appName=Cluster0"; // đổi nếu dùng Atlas
 
 // List các chủ đề sẽ crawl
 const subjects = [
@@ -39,6 +39,10 @@ async function crawlSubject(subject) {
 }
 
 async function startCrawl() {
+  if (!MONGO_URI) {
+    console.error("Fail: Không tìm thấy MONGO_URI trong file .env");
+    process.exit(1);
+  }
   await mongoose.connect(MONGO_URI);
   console.log("Connected to MongoDB...");
 
