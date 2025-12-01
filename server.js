@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
-import connectDB from "./src/config/db.js";
+import connectMongoDB from "./src/config/db.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import bookRoutes from "./src/routes/bookRoutes.js";
 import borrowRoutes from "./src/routes/borrowRoutes.js";
@@ -26,13 +26,11 @@ app.use("/api/borrow", borrowRoutes);
 // Start server
 const PORT = process.env.PORT || 5000;
 
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Failed to connect DB:", err);
-    process.exit(1);
-  });
+connectMongoDB().then(() => {
+  app.listen(PORT, () =>
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+  );
+}
+);
+
+export default app;

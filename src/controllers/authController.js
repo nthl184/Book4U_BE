@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-// 🔑 Tạo JWT token
+// Tạo JWT token
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, role: user.role },
@@ -11,7 +11,7 @@ const generateToken = (user) => {
   );
 };
 
-// 🧩 [POST] /api/auth/login
+// [POST] /api/auth/login
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -36,11 +36,11 @@ export const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// 🧩 [POST] /api/auth/register
+// [POST] /api/auth/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
   const existing = await User.findOne({ email });
-  if (existing) return res.status(400).json({ message: "User already exists" });
+  if (existing) return res.status(409).json({ message: "User already exists" });
   if (role === "admin")
     return res.status(403).json({ message: "Cannot self-register as admin" });
 
@@ -56,7 +56,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   });
 });
 
-// 🧩 [GET] /api/auth/profile
+// [GET] /api/auth/profile
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
   if (!user) return res.status(404).json({ message: "User not found" });
