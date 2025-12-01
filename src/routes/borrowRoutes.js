@@ -20,7 +20,7 @@ import {
 const router = express.Router();
 
 /**
- * 🧾 ROUTES CONFIGURATION
+ * ROUTES CONFIGURATION
  * ────────────────────────────────────────────
  * Admin:
  *    - GET /api/borrow                 → getAll
@@ -35,37 +35,37 @@ const router = express.Router();
  *    - POST /api/borrow/sync           → syncAll (no-op)
  */
 
-// 🧩 Optional route (cho phép truy cập public nếu cần log token)
+// Optional route (cho phép truy cập public nếu cần log token)
 router.use(authOptional);
 
-// 🧾 Admin — xem tất cả borrow
+// Admin — xem tất cả borrow
 router.get("/", authRequired, admin, getAll);
 
-// 🧾 Student/Admin — xem borrow của 1 user cụ thể
+// Student/Admin — xem borrow của 1 user cụ thể
 router.get("/user/:userId", authRequired, getByUser);
 
-// 🧾 Student/Admin — xem borrow của chính mình (qua JWT)
+// Student/Admin — xem borrow của chính mình (qua JWT)
 router.get("/me", authRequired, getMine);
 
-// 🧾 Student — tạo yêu cầu mượn
+// Student — tạo yêu cầu mượn
 router.post("/", authRequired, createBorrow);
 
-// 🧾 Admin — duyệt yêu cầu mượn
+// Admin — duyệt yêu cầu mượn
 router.put("/:id/approve", authRequired, admin, approve);
 
-// 🧾 Admin — từ chối yêu cầu (NEW)
+// Admin — từ chối yêu cầu (NEW)
 router.put("/:id/reject", authRequired, admin, rejectBorrow);
 
-// 🧾 Student — gia hạn mượn
+// Student — gia hạn mượn
 router.put("/:id/extend", authRequired, extend);
 
-// 🧾 Student/Admin — trả sách
+// Student/Admin — trả sách
 router.put("/:id/return", authRequired, markReturned);
 
-// 🧾 Admin — xóa bản ghi
+// Admin — xóa bản ghi
 router.delete("/:id", authRequired, admin, removeBorrow);
 
-// 🧾 Common — sync no-op (nút "Sync" trên FE)
+// Common — sync no-op (nút "Sync" trên FE)
 router.post("/sync", authRequired, syncAll);
 
 export default router;

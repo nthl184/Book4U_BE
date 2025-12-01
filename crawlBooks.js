@@ -40,23 +40,23 @@ async function crawlSubject(subject) {
 
 async function startCrawl() {
   await mongoose.connect(MONGO_URI);
-  console.log("🔗 Connected to MongoDB...");
+  console.log("Connected to MongoDB...");
 
   let allBooks = [];
 
   for (const subject of subjects) {
-    console.log(`📚 Crawling: ${subject}`);
+    console.log(`Crawling: ${subject}`);
     const books = await crawlSubject(subject);
     allBooks.push(...books);
   }
 
-  console.log(`📥 Total crawled books: ${allBooks.length}`);
+  console.log(`Total crawled books: ${allBooks.length}`);
 
   // clear & insert
   await Book.deleteMany({});
   await Book.insertMany(allBooks);
 
-  console.log("✅ Crawled & Seeded successfully!");
+  console.log("Crawled & Seeded successfully!");
   process.exit();
 }
 

@@ -9,11 +9,10 @@
 Book4U Backend là **server API** phục vụ cho hệ thống thư viện thông minh (Book4U).  
 Nó cung cấp các tính năng chính:
 
-- ✅ Xác thực người dùng (JWT Authentication)
-- ✅ Quản lý sách (Books CRUD)
-- ✅ Quản lý yêu cầu mượn trả (Borrow Management)
-- ✅ Tự động phân quyền (Student / Admin)
-- ✅ Kết nối MongoDB (Atlas hoặc Local)
+- Xác thực người dùng (JWT Authentication)
+- Quản lý yêu cầu mượn trả (Borrow Management)
+- Tự động phân quyền (Student / Admin)
+- Kết nối MongoDB (Atlas hoặc Local)
 
 ---
 
