@@ -107,18 +107,6 @@ Book4U_BE/
 ---
 
 ## **5. Authentication Flow**
-
-### Register (`POST /api/auth/register`)
-
-```json
-{
-  "name": "Nguyen Thi My Duyen",
-  "email": "22520350@gm.uit.edu.vn",
-  "password": "1234",
-  "role": "student"
-}
-```
-
 ### Login (`POST /api/auth/login`)
 
 > Hỗ trợ 2 cách đăng nhập:
@@ -155,7 +143,6 @@ Book4U_BE/
 
 | Endpoint                  | Method | Description                   | Role          |
 | ------------------------- | ------ | ----------------------------- | ------------- |
-| `/api/auth/register`      | POST   | Tạo tài khoản mới             | Admin         |
 | `/api/auth/login`         | POST   | Đăng nhập                     | All           |
 | `/api/books`              | GET    | Lấy danh sách sách            | All           |
 | `/api/books/:id`          | GET    | Chi tiết sách                 | All           |
