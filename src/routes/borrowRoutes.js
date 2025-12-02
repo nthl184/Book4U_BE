@@ -9,7 +9,6 @@ import {
   extend,
   markReturned,
   removeBorrow,
-  syncAll,
 } from "../controllers/borrowController.js";
 import {
   authRequired,
@@ -65,7 +64,5 @@ router.put("/:id/return", authRequired, markReturned);
 // Admin — xóa bản ghi
 router.delete("/:id", authRequired, admin, removeBorrow);
 
-// Common — sync no-op (nút "Sync" trên FE)
-router.post("/sync", authRequired, syncAll);
 
 export default router;

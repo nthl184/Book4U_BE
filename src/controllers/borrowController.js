@@ -208,6 +208,3 @@ export const removeBorrow = asyncHandler(async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
-export const syncAll = asyncHandler(async (req, res) => {
-  res.json({ message: "Sync OK" });
-});
