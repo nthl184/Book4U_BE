@@ -6,17 +6,10 @@ import {
   updateBook,
   deleteBook,
 } from "../controllers/bookController.js";
-// thêm middleware bảo vệ
 import { authOptional, protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
-/**
- * @swagger
- * tags:
- * name: Books
- * description: Quản lý sách
- */
-// 1. Các route xem sách (GET) -> Ai xem cũng được (authOptional để lấy info nếu có login)
+
 /**
  * @swagger
  * /api/books:
@@ -52,6 +45,7 @@ router.get("/", authOptional, getBooks);
  * required: true
  * schema:
  * type: string
+ * description: ID của sách
  * responses:
  * 200:
  * description: Thông tin sách
@@ -60,7 +54,7 @@ router.get("/", authOptional, getBooks);
  */
 router.get("/:id", authOptional, getBookById);
 
-// 2. Các route thay đổi dữ liệu (POST, PUT, DELETE) -> admin mới được làm
+// Các route Admin (Không cần swagger cũng được, hoặc thêm sau)
 router.post("/", protect, admin, createBook);
 router.put("/:id", protect, admin, updateBook);
 router.delete("/:id", protect, admin, deleteBook);

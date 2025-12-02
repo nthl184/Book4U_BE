@@ -43,8 +43,13 @@ const options = {
       description: "API Documents for Book4U Library Project",
     },
     servers: [
-      { url: "https://book4u-be.onrender.com" }, // Link Render production
-     // { url: "http://localhost:5000" },
+      { url: "https://book4u-be.onrender.com", description: "Production" }, // Link Render production
+     // { url: "http://localhost:5000", description: "Local" }, // Link local dev
+    ],
+    tags: [
+      { name: "Auth", description: "Quản lý xác thực (Login/Profile)" },
+      { name: "Books", description: "Quản lý sách" },
+      { name: "Borrow", description: "Quản lý mượn trả" }
     ],
     components: {
       securitySchemes: {
