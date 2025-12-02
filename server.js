@@ -44,7 +44,7 @@ const options = {
     },
     servers: [
       { url: "https://book4u-be.onrender.com" }, // Link Render production
-      { url: "http://localhost:5000" },
+     // { url: "http://localhost:5000" },
     ],
     components: {
       securitySchemes: {
