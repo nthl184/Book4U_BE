@@ -6,7 +6,8 @@ import connectMongoDB from "./src/config/db.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import bookRoutes from "./src/routes/bookRoutes.js";
 import borrowRoutes from "./src/routes/borrowRoutes.js";
-
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 dotenv.config();
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(morgan("dev"));
 // Health check
 app.get("/", (req, res) => res.send("Book4U API is running"));
 
-// API routes (baseURL expected by FE: http://localhost:5000/api)
+// API routes (baseURL expected by FE)
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/borrow", borrowRoutes);
@@ -32,5 +33,29 @@ connectMongoDB().then(() => {
   );
 }
 );
+// Swagger
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Book4U API Documentation",
+      version: "1.0.0",
+      description: "API Documents for Book4U Library Project",
+    },
+    servers: [
+      { url: "https://book4u-be.onrender.com" }, // Link Render production
+      { url: "http://localhost:5000" },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+  },
+  apis: ["./src/routes/*.js"], // Quét comment trong folder routes
+};
 
+const specs = swaggerJsdoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 export default app;
