@@ -18,24 +18,8 @@ import {
 
 const router = express.Router();
 
-/**
- * ROUTES CONFIGURATION
- * ────────────────────────────────────────────
- * Admin:
- *    - GET /api/borrow                 → getAll
- *    - PUT /api/borrow/:id/approve     → approve
- *    - DELETE /api/borrow/:id          → removeBorrow
- * Student/Admin:
- *    - GET /api/borrow/user/:userId    → getByUser
- *    - GET /api/borrow/me              → getMine
- *    - POST /api/borrow                → createBorrow
- *    - PUT /api/borrow/:id/extend      → extend
- *    - PUT /api/borrow/:id/return      → markReturned
- *    - POST /api/borrow/sync           → syncAll (no-op)
- */
-
-// Optional route (cho phép truy cập public nếu cần log token)
 router.use(authOptional);
+
 /**
  * @swagger
  * tags:
@@ -83,12 +67,23 @@ router.use(authOptional);
  * 400:
  * description: Sách hết hoặc đã mượn quá giới hạn
  */
-
-// Admin — xem tất cả borrow
 router.get("/", authRequired, admin, getAll);
+router.post("/", authRequired, createBorrow);
 
-// Student/Admin — xem borrow của 1 user cụ thể
-router.get("/user/:userId", authRequired, getByUser);
+/**
+ * @swagger
+ * /api/borrow/me:
+ * get:
+ * summary: (Student) Xem lịch sử mượn của chính mình
+ * tags: [Borrow]
+ * security:
+ * - bearerAuth: []
+ * responses:
+ * 200:
+ * description: Danh sách mượn của user hiện tại
+ */
+router.get("/me", authRequired, getMine);
+
 /**
  * @swagger
  * /api/borrow/user/{userId}:
@@ -107,27 +102,8 @@ router.get("/user/:userId", authRequired, getByUser);
  * 200:
  * description: Danh sách mượn của user
  */
+router.get("/user/:userId", authRequired, getByUser);
 
-// Student/Admin — xem borrow của chính mình (qua JWT)
-router.get("/me", authRequired, getMine);
-/**
- * @swagger
- * /api/borrow/me:
- * get:
- * summary: (Student) Xem lịch sử mượn của chính mình
- * tags: [Borrow]
- * security:
- * - bearerAuth: []
- * responses:
- * 200:
- * description: Danh sách mượn của user hiện tại
- */
-
-// Student — tạo yêu cầu mượn
-router.post("/", authRequired, createBorrow);
-
-// Admin — duyệt yêu cầu mượn
-router.put("/:id/approve", authRequired, admin, approve);
 /**
  * @swagger
  * /api/borrow/{id}/approve:
@@ -146,9 +122,8 @@ router.put("/:id/approve", authRequired, admin, approve);
  * 200:
  * description: Đã duyệt
  */
+router.put("/:id/approve", authRequired, admin, approve);
 
-// Admin — từ chối yêu cầu (NEW)
-router.put("/:id/reject", authRequired, admin, rejectBorrow);
 /**
  * @swagger
  * /api/borrow/{id}/reject:
@@ -167,9 +142,8 @@ router.put("/:id/reject", authRequired, admin, rejectBorrow);
  * 200:
  * description: Đã từ chối
  */
+router.put("/:id/reject", authRequired, admin, rejectBorrow);
 
-// Student — gia hạn mượn
-router.put("/:id/extend", authRequired, extend);
 /**
  * @swagger
  * /api/borrow/{id}/extend:
@@ -188,9 +162,8 @@ router.put("/:id/extend", authRequired, extend);
  * 200:
  * description: Gia hạn thành công
  */
+router.put("/:id/extend", authRequired, extend);
 
-// Student/Admin — trả sách
-router.put("/:id/return", authRequired, markReturned);
 /**
  * @swagger
  * /api/borrow/{id}/return:
@@ -209,9 +182,8 @@ router.put("/:id/return", authRequired, markReturned);
  * 200:
  * description: Trả sách thành công
  */
+router.put("/:id/return", authRequired, markReturned);
 
-// Admin — xóa bản ghi
-router.delete("/:id", authRequired, admin, removeBorrow);
 /**
  * @swagger
  * /api/borrow/{id}:
@@ -230,5 +202,6 @@ router.delete("/:id", authRequired, admin, removeBorrow);
  * 200:
  * description: Đã xóa
  */
+router.delete("/:id", authRequired, admin, removeBorrow);
 
 export default router;

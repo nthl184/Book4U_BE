@@ -54,7 +54,7 @@ router.get("/", authOptional, getBooks);
  */
 router.get("/:id", authOptional, getBookById);
 
-// Các route Admin (Không cần swagger cũng được, hoặc thêm sau)
+// Các route Admin
 router.post("/", protect, admin, createBook);
 router.put("/:id", protect, admin, updateBook);
 router.delete("/:id", protect, admin, deleteBook);
