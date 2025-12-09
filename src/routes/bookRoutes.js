@@ -12,45 +12,51 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Books
+ *   description: Book catalog management
+ */
+/**
+ * @swagger
  * /api/books:
- * get:
- * summary: Lấy danh sách tất cả sách (Hỗ trợ tìm kiếm)
- * tags: [Books]
- * parameters:
- * - in: query
- * name: keyword
- * schema:
- * type: string
- * description: Tìm theo tên sách hoặc tác giả
- * - in: query
- * name: category
- * schema:
- * type: string
- * description: Lọc theo thể loại
- * responses:
- * 200:
- * description: Thành công
+ *   get:
+ *     summary: Lấy danh sách tất cả sách (Hỗ trợ tìm kiếm)
+ *     tags: [Books]
+ *     parameters:
+ *       - in: query
+ *         name: keyword
+ *         schema:
+ *           type: string
+ *         description: Tìm theo tên sách hoặc tác giả
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Lọc theo thể loại
+ *     responses:
+ *       200:
+ *         description: Thành công
  */
 router.get("/", authOptional, getBooks);
 
 /**
  * @swagger
  * /api/books/{id}:
- * get:
- * summary: Xem chi tiết một cuốn sách
- * tags: [Books]
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: string
- * description: ID của sách
- * responses:
- * 200:
- * description: Thông tin sách
- * 404:
- * description: Không tìm thấy
+ *   get:
+ *     summary: Xem chi tiết một cuốn sách
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của sách
+ *     responses:
+ *       200:
+ *         description: Thông tin sách
+ *       404:
+ *         description: Không tìm thấy
  */
 router.get("/:id", authOptional, getBookById);
 
