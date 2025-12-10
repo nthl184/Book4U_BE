@@ -58,7 +58,11 @@ const options = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ["./src/routes/*.js"], // Quét comment trong folder routes
+  apis: [
+    "./src/routes/*.js", // Quét comment trong folder routes
+    "./src/swagger.schemas.js" // file components/schemas
+  ], 
+
 };
 
 const specs = swaggerJsdoc(options);
