@@ -30,7 +30,6 @@ const router = express.Router();
  *    - POST /api/borrow                → createBorrow
  *    - PUT /api/borrow/:id/extend      → extend
  *    - PUT /api/borrow/:id/return      → markReturned
- *    - POST /api/borrow/sync           → syncAll (no-op)
  */
 
 router.use(authOptional);
@@ -46,20 +45,26 @@ router.use(authOptional);
  * @swagger
  * /api/borrow:
  *   get:
- *     summary: (Admin) Lấy danh sách tất cả phiếu mượn
  *     tags: [Borrow]
+ *     summary: Get all borrow records (Admin)
+ *     description: Return normalized list of all borrow records for admin view.
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Danh sách phiếu mượn
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden (Not Admin)
+ *       "200":
+ *         description: List of borrow records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/BorrowAdminView"
  *   post:
- *     summary: (Student) Tạo yêu cầu mượn sách mới
  *     tags: [Borrow]
+ *     summary: Create a borrow request (Student)
+ *     description: |
+ *       Create a new borrow request with status `Pending Approval`.
+ *       Enforces max 3 active borrowings per student and checks book availability.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -67,20 +72,20 @@ router.use(authOptional);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - userId
- *               - bookId
- *             properties:
- *               userId:
- *                 type: string
- *               bookId:
- *                 type: string
+ *             $ref: "#/components/schemas/BorrowCreateRequest"
  *     responses:
- *       201:
- *         description: Tạo yêu cầu thành công
- *       400:
- *         description: Sách hết hoặc đã mượn quá giới hạn
+ *       "201":
+ *         description: Borrow request created, returned in admin view format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/BorrowAdminView"
+ *       "400":
+ *         description: Invalid user/book or limit exceeded / out of stock
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.get("/", authRequired, admin, getAll);
 router.post("/", authRequired, createBorrow);
@@ -89,13 +94,20 @@ router.post("/", authRequired, createBorrow);
  * @swagger
  * /api/borrow/me:
  *   get:
- *     summary: (Student) Xem lịch sử mượn của chính mình
  *     tags: [Borrow]
+ *     summary: Get current student's borrow history
+ *     description: Returns only borrow records of the authenticated user.
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Danh sách mượn của user hiện tại
+ *       "200":
+ *         description: List of borrow records for current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/BorrowStudentView"
  */
 router.get("/me", authRequired, getMine);
 
@@ -103,19 +115,25 @@ router.get("/me", authRequired, getMine);
  * @swagger
  * /api/borrow/user/{userId}:
  *   get:
- *     summary: (Admin) Xem lịch sử mượn của user cụ thể
  *     tags: [Borrow]
+ *     summary: Get borrow records of a specific user (Admin)
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Danh sách mượn của user
+ *       "200":
+ *         description: List of borrow records for the given user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/BorrowStudentView"
  */
 router.get("/user/:userId", authRequired, getByUser);
 
@@ -123,19 +141,38 @@ router.get("/user/:userId", authRequired, getByUser);
  * @swagger
  * /api/borrow/{id}/approve:
  *   put:
- *     summary: (Admin) Duyệt yêu cầu mượn
  *     tags: [Borrow]
+ *     summary: Approve a borrow request (Admin)
+ *     description: |
+ *       Approve a borrow request with status `Pending Approval`.
+ *       Re-checks book availability, decrements stock, and sets status to `Borrowing` with borrow and due dates.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Đã duyệt
+ *       "200":
+ *         description: Borrow request approved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/BorrowAdminView"
+ *       "400":
+ *         description: Not pending or out of stock
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "404":
+ *         description: Borrow record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.put("/:id/approve", authRequired, admin, approve);
 
@@ -143,19 +180,36 @@ router.put("/:id/approve", authRequired, admin, approve);
  * @swagger
  * /api/borrow/{id}/reject:
  *   put:
- *     summary: (Admin) Từ chối yêu cầu mượn
  *     tags: [Borrow]
+ *     summary: Reject a borrow request (Admin)
+ *     description: Set status to `Rejected` for a pending borrow request.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Đã từ chối
+ *       "200":
+ *         description: Borrow request rejected
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/BorrowAdminView"
+ *       "400":
+ *         description: Only pending requests can be rejected
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "404":
+ *         description: Borrow record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.put("/:id/reject", authRequired, admin, rejectBorrow);
 
@@ -163,19 +217,38 @@ router.put("/:id/reject", authRequired, admin, rejectBorrow);
  * @swagger
  * /api/borrow/{id}/extend:
  *   put:
- *     summary: (Student) Gia hạn sách thêm 7 ngày
  *     tags: [Borrow]
+ *     summary: Extend borrow due date
+ *     description: |
+ *       Extend the due date by 7 days.
+ *       Allowed when status is `Borrowing` or `Overdue`.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Gia hạn thành công
+ *       "200":
+ *         description: Borrow record extended
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/BorrowAdminView"
+ *       "400":
+ *         description: Only borrowing/overdue records can be extended
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "404":
+ *         description: Borrow record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.put("/:id/extend", authRequired, extend);
 
@@ -183,19 +256,37 @@ router.put("/:id/extend", authRequired, extend);
  * @swagger
  * /api/borrow/{id}/return:
  *   put:
- *     summary: (Admin/Student) Đánh dấu đã trả sách
  *     tags: [Borrow]
+ *     summary: Mark a borrow as returned
+ *     description: |
+ *       Mark a borrow record as `Returned` and increase book availability again (not exceeding original stock).
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Trả sách thành công
+ *       "200":
+ *         description: Borrow record marked as returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/BorrowAdminView"
+ *       "400":
+ *         description: Already returned or invalid state
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "404":
+ *         description: Borrow record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.put("/:id/return", authRequired, markReturned);
 
@@ -203,19 +294,29 @@ router.put("/:id/return", authRequired, markReturned);
  * @swagger
  * /api/borrow/{id}:
  *   delete:
- *     summary: (Admin) Xóa bản ghi mượn
  *     tags: [Borrow]
+ *     summary: Delete a borrow record (Admin)
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     security:
- *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Delete successful
+ *       "200":
+ *         description: Borrow record deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "404":
+ *         description: Borrow record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
  */
 router.delete("/:id", authRequired, admin, removeBorrow);
 
